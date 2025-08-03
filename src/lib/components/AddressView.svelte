@@ -24,11 +24,26 @@
 		profilePic?: string;
 	}
 
-	export let contact: Contact;
+	let { contact, modalData = $bindable(), setupEditModal } = $props<{
+		contact: Contact;
+		modalData: {
+			status: 'closed' | 'open';
+			action: 'add' | 'update';
+			contact?: Contact;
+			accept: (contact: Omit<Contact, 'id'>) => void;
+			reject: () => void;
+		};
+		setupEditModal: (contact: Contact) => void;
+	}>();
 
 	function copyToClipboard(text: string) {
 		navigator.clipboard.writeText(text);
 		// TODO: Add toast notification
+	}
+
+	function handleEdit() {
+		// Use the parent's function to set up the modal with proper handlers
+		setupEditModal(contact);
 	}
 
 	// Profile picture mapping
@@ -195,7 +210,7 @@
 
 				<!-- Action Buttons -->
 				<div class="flex flex-wrap justify-end gap-2 pt-4">
-					<button class="btn btn-sm btn-primary">
+					<button class="btn btn-sm btn-primary" onclick={handleEdit}>
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"

@@ -74,9 +74,32 @@
 		}
 	]);
 
-	let searchTerm = $state('');
-	let sortBy = $state('first');
-	let showAddAddress = $state(false);
+	let searchTerm     = $state('');
+	let sortBy         = $state('first');
+
+	let modalData = $state<{
+		status: 'closed' | 'open';
+		action: 'add' | 'update';
+		contact?: Contact;
+		accept: (contact: Omit<Contact, 'id'>) => void;
+		reject: () => void;
+	}>({
+		status: 'closed',
+		action: 'add',
+		contact: undefined,
+		accept: () => {},
+		reject: () => {}
+	})
+
+	function handleAddOrEditAddress(contact: Contact) {
+		modalData = {
+			status: 'open',
+			action: 'update',
+			contact: contact,
+			accept: handleUpdateAddress,
+			reject: () => { modalData.status = 'closed'; }
+		};
+	}
 
 	function handleAddAddress(contact: Omit<Contact, 'id'>) {
 		console.log(contact);
@@ -87,7 +110,35 @@
 		};
 
 		contacts.push(newContact);
-		showAddAddress = false;
+		modalData.status = 'closed';
+	}
+
+	function handleUpdateAddress(contact: Omit<Contact, 'id'>) {
+		console.log('Updating contact:', contact);
+		
+		if (modalData.contact) {
+			const updatedContact: Contact = {
+				...contact,
+				id: modalData.contact.id
+			};
+			
+			const index = contacts.findIndex(c => c.id === modalData.contact!.id);
+			if (index !== -1) {
+				contacts[index] = updatedContact;
+			}
+		}
+		
+		modalData.status = 'closed';
+	}
+
+	function setupEditModal(contact: Contact) {
+		modalData = {
+			status: 'open',
+			action: 'update',
+			contact: contact,
+			accept: handleUpdateAddress,
+			reject: () => { modalData.status = 'closed'; }
+		};
 	}
 	
 	// Computed values -- NEVER COMPUTE VALUES IN AN EFFECT!
@@ -157,7 +208,13 @@
 				<button
 					class="btn btn-primary"
 					onclick={() => {
-						showAddAddress = true;
+						modalData = {
+							status: 'open',
+							action: 'add',
+							contact: undefined,
+							accept: handleAddAddress,
+							reject: () => { modalData.status = 'closed'; }
+						};
 					}}
 				>
 					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,7 +262,15 @@
 						: 'Get started by adding your first contact'}
 				</p>
 				{#if !searchTerm}
-					<button class="btn btn-primary" onclick={() => { showAddAddress = true; }}>
+					<button class="btn btn-primary" onclick={() => {
+						modalData = {
+							status: 'open',
+							action: 'add',
+							contact: undefined,
+							accept: handleAddAddress,
+							reject: () => { modalData.status = 'closed'; }
+						};
+					}}>
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
@@ -222,12 +287,12 @@
 			<!-- Contact List -->
 			<div class="space-y-3">
 				{#each sortedContacts as contact (contact.id)}
-					<AddressView {contact} />
+					<AddressView {contact} bind:modalData {setupEditModal} />
 				{/each}
 			</div>
 		{/if}
 	</main>
 </div>
-{#if showAddAddress}
-	<AddressAdd onClose={() => (showAddAddress = false)} onSave={handleAddAddress} />
+{#if modalData.status === 'open'}
+	<AddressAdd bind:modalData />
 {/if}

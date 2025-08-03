@@ -15,12 +15,17 @@
 	}
 
 	// Props
-	let { onClose, onSave } = $props<{
-		onClose: () => void;
-		onSave: (contact: Omit<Contact, 'id'>) => void;
+	let { modalData = $bindable() } = $props<{
+		modalData: {
+			status: 'closed' | 'open';
+			action: 'add' | 'update';
+			contact?: Contact;
+			accept: (contact: Omit<Contact, 'id'>) => void;
+			reject: () => void;
+		};
 	}>();
 
-	// Form state
+	// Init form state
 	let firstName = $state('');
 	let lastName = $state('');
 	let email = $state('');
@@ -30,6 +35,20 @@
 	let notes = $state('');
 	let profilePic = $state('default');
 	let showProfilePicker = $state(false);
+
+	// Effect to populate form when modalData.contact is provided
+	$effect(() => {
+		if (modalData.contact) {
+			firstName = modalData.contact.firstName;
+			lastName = modalData.contact.lastName;
+			email = modalData.contact.email;
+			phone = modalData.contact.phone;
+			address = modalData.contact.address;
+			company = modalData.contact.company || '';
+			notes = modalData.contact.notes || '';
+			profilePic = modalData.contact.profilePic || 'default';
+		}
+	});
 
 	// Form validation
 	let errors = $state<Record<string, string>>({});
@@ -63,7 +82,7 @@
 				profilePic: profilePic || undefined
 			};
 			
-			onSave(newContact);
+			modalData.accept(newContact);
 			handleClose();
 		}
 	}
@@ -81,7 +100,9 @@
 		showProfilePicker = false;
 		errors = {};
 		
-		onClose();
+		if (modalData.reject) {
+			modalData.reject();
+		}	
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
@@ -152,8 +173,8 @@
 					<Plus class="w-5 h-5 text-primary" />
 				</div>
 				<div>
-					<h2 class="text-xl font-bold text-base-content">Add New Contact</h2>
-					<p class="text-sm text-base-content/70">Fill in the details below</p>
+					<h2 class="text-xl font-bold text-base-content">{modalData.contact ? 'Edit Contact' : 'Add New Contact'}</h2>
+					<p class="text-sm text-base-content/70">{modalData.contact ? 'Update the contact details below' : 'Fill in the details below'}</p>
 				</div>
 			</div>
 			<button 
@@ -362,7 +383,7 @@
 				onclick={handleSubmit}
 			>
 				<Save class="w-4 h-4" />
-				Save Contact
+				{modalData.contact ? 'Update Contact' : 'Save Contact'}
 			</button>
 		</div>
 	</div>
