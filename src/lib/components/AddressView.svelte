@@ -38,6 +38,8 @@
 			</div>
 			{#if contact.company}
 				<div class="text-sm text-base-content/70">{contact.company}</div>
+			{:else}
+				<div class="text-sm text-base-content/70">{contact.email}</div>
 			{/if}
 		</div>
 	</div>

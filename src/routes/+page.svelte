@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
-	import ItemView from '$lib/components/ItemView.svelte';
+	import AddressView from '$lib/components/AddressView.svelte';
+	import AddressAdd from '$lib/components/AddressAdd.svelte';
 
 	interface Contact {
 		id: number;
@@ -14,7 +15,7 @@
 	}
 
 	// Sample contact data
-	let contacts: Contact[] = [
+	let contacts: Contact[] = $state([
 		{
 			id: 1,
 			firstName: 'John',
@@ -65,19 +66,33 @@
 			company: 'Consulting Group',
 			notes: 'Business consultant. Valuable insights on growth strategy.'
 		}
-	];
+	]);
 
-	let searchTerm = $state("");
-	let sortBy     = $state("first")
+	let searchTerm = $state('');
+	let sortBy = $state('first');
+	let showAddAddress = $state(false);
 
+	function handleAddAddress(contact: Omit<Contact, 'id'>) {
+		console.log(contact);
+
+		const newContact: Contact = {
+			...contact,
+			id: Math.max(...contacts.map(c => c.id), 0) + 1
+		};
+
+		contacts.push(newContact);
+		showAddAddress = false;
+	}
+	
 	// Computed values -- NEVER COMPUTE VALUES IN AN EFFECT!
 	let filteredContacts = $derived(
-		contacts.filter((contact: Contact) =>
-			contact.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			contact.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			contact.email.toLowerCase().includes(searchTerm.toLowerCase())
+		contacts.filter(
+			(contact: Contact) =>
+				contact.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				contact.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				contact.email.toLowerCase().includes(searchTerm.toLowerCase())
 		)
-	)
+	);
 
 	let sortedContacts = $derived(
 		[...filteredContacts].sort((a: Contact, b: Contact) => {
@@ -91,54 +106,61 @@
 	);
 
 	let contactCount = $derived(sortedContacts.length);
-	
-	function addContact() {
-		// TODO: Implement add contact functionality
-		console.log('Add contact clicked');
-	}
-
-	$inspect(searchTerm, sortBy, filteredContacts, sortedContacts, contactCount)
 </script>
-
 
 <svelte:head>
 	<title>Address Book</title>
 </svelte:head>
 
-<div class="min-h-screen w-4xl mx-auto bg-surface border-r-2 border-l-2 border-base-300">
+<div class="bg-surface mx-auto min-h-screen w-4xl border-r-2 border-l-2 border-base-300">
 	<Header {contactCount} bind:searchTerm bind:sortBy />
 
 	<!-- Search and Filters Section -->
-	<div class="bg-base-200/50 border-b border-base-300 justify-center">
+	<div class="justify-center border-b border-base-300 bg-base-200/50">
 		<div class="container mx-auto px-4 py-4">
-			<div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+			<div class="flex flex-col items-center justify-center gap-3 sm:flex-row">
 				<!-- Search -->
 				<div class="join">
 					<div class="join-item">
 						<input
 							type="text"
 							placeholder="Search contacts by name, email, or phone..."
-							class="input input-bordered join-item w-full sm:w-64"
+							class="input-bordered input join-item w-full sm:w-64"
 							bind:value={searchTerm}
 						/>
 					</div>
-					<button aria-label="Search" class="btn btn-primary join-item">
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+					<button aria-label="Search" class="btn join-item btn-primary">
+						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+							/>
 						</svg>
 					</button>
 				</div>
 
 				<!-- Sort Dropdown -->
-				<select class="select select-bordered" bind:value={sortBy}>
+				<select class="select-bordered select" bind:value={sortBy}>
 					<option value="lastName">Sort by Last Name</option>
 					<option value="firstName">Sort by First Name</option>
 				</select>
 
 				<!-- Add Contact Button -->
-				<button class="btn btn-primary" onclick={addContact}>
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+				<button
+					class="btn btn-primary"
+					onclick={() => {
+						showAddAddress = true;
+					}}
+				>
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+						/>
 					</svg>
 					Add Contact
 				</button>
@@ -147,25 +169,44 @@
 	</div>
 
 	<!-- Main Content -->
-	<main class="container mx-auto px-4 py-8 bg-surface">
+	<main class="bg-surface container mx-auto px-4 py-8">
 		{#if sortedContacts.length === 0}
 			<!-- Empty State -->
-			<div class="text-center py-16">
-				<div class="w-24 h-24 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-6">
-					<svg class="w-12 h-12 text-base-content/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+			<div class="py-16 text-center">
+				<div
+					class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-base-200"
+				>
+					<svg
+						class="h-12 w-12 text-base-content/50"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+						/>
 					</svg>
 				</div>
-				<h3 class="text-xl font-semibold text-base-content mb-2">
+				<h3 class="mb-2 text-xl font-semibold text-base-content">
 					{searchTerm ? 'No contacts found' : 'No contacts yet'}
 				</h3>
-				<p class="text-base-content/70 mb-6">
-					{searchTerm ? 'Try adjusting your search terms' : 'Get started by adding your first contact'}
+				<p class="mb-6 text-base-content/70">
+					{searchTerm
+						? 'Try adjusting your search terms'
+						: 'Get started by adding your first contact'}
 				</p>
 				{#if !searchTerm}
-					<button class="btn btn-primary" onclick={addContact}>
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+					<button class="btn btn-primary" onclick={() => { showAddAddress = true; }}>
+						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+							/>
 						</svg>
 						Add Your First Contact
 					</button>
@@ -175,9 +216,20 @@
 			<!-- Contact List -->
 			<div class="space-y-3">
 				{#each sortedContacts as contact (contact.id)}
-					<ItemView {contact} />
+					<AddressView {contact} />
 				{/each}
 			</div>
 		{/if}
 	</main>
 </div>
+{#if showAddAddress}
+	<!-- Custom Modal Overlay -->
+	<div class="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+		<!-- Modal Window - 3/4 width of w-4xl container -->
+		<div class="w-4xl mx-auto">
+			<div class="w-3/4 mx-auto bg-base-100 rounded-2xl shadow-2xl border border-base-300">
+				<AddressAdd onClose={() => (showAddAddress = false)} onSave={handleAddAddress} />
+			</div>
+		</div>
+	</div>
+{/if}
