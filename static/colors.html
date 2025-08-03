@@ -163,6 +163,36 @@
 			text-align: right;
 		}
 
+		.slider-controls {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+
+		.slider-btn {
+			width: 24px;
+			height: 24px;
+			border: none;
+			border-radius: 4px;
+			background: #1f3cff;
+			color: #fff;
+			font-size: 0.8rem;
+			font-weight: bold;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: background 0.2s ease;
+		}
+
+		.slider-btn:hover {
+			background: #0f2bcc;
+		}
+
+		.slider-btn:active {
+			background: #0a1f99;
+		}
+
 		.values {
 			margin-top: 1.5rem;
 			display: flex;
@@ -330,17 +360,29 @@
 			<div class="slider-group">
 				<div class="slider-label">Luma</div>
 				<input type="range" id="lumaSlider" class="slider-input" min="0" max="100" step="0.1" value="54.7" />
-				<div class="slider-value" id="lumaValue">54.7%</div>
+				<div class="slider-controls">
+					<div class="slider-value" id="lumaValue">54.7%</div>
+					<button class="slider-btn" id="lumaMinus">−</button>
+					<button class="slider-btn" id="lumaPlus">+</button>
+				</div>
 			</div>
 			<div class="slider-group">
 				<div class="slider-label">Chroma</div>
 				<input type="range" id="chromaSlider" class="slider-input" min="0" max="0.4" step="0.001" value="0.511" />
-				<div class="slider-value" id="chromaValue">0.511</div>
+				<div class="slider-controls">
+					<div class="slider-value" id="chromaValue">0.511</div>
+					<button class="slider-btn" id="chromaMinus">−</button>
+					<button class="slider-btn" id="chromaPlus">+</button>
+				</div>
 			</div>
 			<div class="slider-group">
 				<div class="slider-label">Hue</div>
 				<input type="range" id="hueSlider" class="slider-input" min="0" max="360" step="1" value="207" />
-				<div class="slider-value" id="hueValue">207°</div>
+				<div class="slider-controls">
+					<div class="slider-value" id="hueValue">207°</div>
+					<button class="slider-btn" id="hueMinus">−</button>
+					<button class="slider-btn" id="huePlus">+</button>
+				</div>
 			</div>
 		</div>
 		<div class="values">
@@ -544,6 +586,21 @@
 				
 				// Update slider and trigger update
 				document.getElementById('lumaSlider').value = newLuma * 100;
+				updateFromSliders();
+			}
+
+			// Fine-tune slider values with +/- buttons
+			function adjustSlider(sliderId, direction) {
+				const slider = document.getElementById(sliderId);
+				const currentValue = parseFloat(slider.value);
+				const step = parseFloat(slider.step);
+				const min = parseFloat(slider.min);
+				const max = parseFloat(slider.max);
+				
+				const adjustment = direction === 'minus' ? -step : step;
+				const newValue = Math.max(min, Math.min(max, currentValue + adjustment));
+				
+				slider.value = newValue;
 				updateFromSliders();
 			}
 
@@ -757,6 +814,14 @@
 			// Lightness adjustment buttons
 			document.getElementById('darkenBtn').addEventListener('click', () => adjustLightness('darken'));
 			document.getElementById('lightenBtn').addEventListener('click', () => adjustLightness('lighten'));
+
+			// Slider fine-tuning buttons
+			document.getElementById('lumaMinus').addEventListener('click', () => adjustSlider('lumaSlider', 'minus'));
+			document.getElementById('lumaPlus').addEventListener('click', () => adjustSlider('lumaSlider', 'plus'));
+			document.getElementById('chromaMinus').addEventListener('click', () => adjustSlider('chromaSlider', 'minus'));
+			document.getElementById('chromaPlus').addEventListener('click', () => adjustSlider('chromaSlider', 'plus'));
+			document.getElementById('hueMinus').addEventListener('click', () => adjustSlider('hueSlider', 'minus'));
+			document.getElementById('huePlus').addEventListener('click', () => adjustSlider('hueSlider', 'plus'));
 
 			// Initialize with default color
 			setColorFromHex(document.getElementById('colorPicker').value);
