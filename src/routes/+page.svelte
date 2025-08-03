@@ -117,7 +117,7 @@
 					<div class="join-item">
 						<input
 							type="text"
-							placeholder="Search contacts..."
+							placeholder="Search contacts by name, email, or phone..."
 							class="input input-bordered join-item w-full sm:w-64"
 							bind:value={searchTerm}
 						/>
