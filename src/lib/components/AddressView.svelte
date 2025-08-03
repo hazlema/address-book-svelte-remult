@@ -84,7 +84,7 @@
 	}
 </script>
 
-<div class="collapse-arrow collapse bg-base-200 transition-colors border-2 border-black/10">
+<div class="collapse-arrow collapse bg-base-200 border-2 border-black/10 transition-all duration-300 ease-in-out">
 	<input type="checkbox" />
 	<div class="collapse-title flex items-center gap-5 text-lg font-medium">
 		<!-- Avatar -->
@@ -114,7 +114,7 @@
 		</div>
 	</div>
 
-	<div class="collapse-content">
+	<div class="collapse-content transition-all duration-300 ease-in-out">
 		<div
 			class="grid grid-cols-1 gap-6 rounded-2xl border-2 border-black/10 bg-base-300 p-4 pt-4 md:grid-cols-2"
 		>
