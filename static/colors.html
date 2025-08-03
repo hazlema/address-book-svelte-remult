@@ -112,6 +112,57 @@
 			background: #0f2bcc;
 		}
 
+		.sliders {
+			margin-top: 1.5rem;
+			background: rgba(255, 255, 255, 0.08);
+			border-radius: 12px;
+			padding: 1.5rem;
+		}
+		.slider-group {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+			margin-bottom: 1rem;
+		}
+		.slider-group:last-child {
+			margin-bottom: 0;
+		}
+		.slider-label {
+			min-width: 60px;
+			font-size: 0.9rem;
+			font-weight: 600;
+		}
+		.slider-input {
+			flex: 1;
+			height: 6px;
+			border-radius: 3px;
+			background: rgba(255, 255, 255, 0.2);
+			outline: none;
+			cursor: pointer;
+		}
+		.slider-input::-webkit-slider-thumb {
+			appearance: none;
+			width: 18px;
+			height: 18px;
+			border-radius: 50%;
+			background: #1f3cff;
+			cursor: pointer;
+		}
+		.slider-input::-moz-range-thumb {
+			width: 18px;
+			height: 18px;
+			border-radius: 50%;
+			background: #1f3cff;
+			border: none;
+			cursor: pointer;
+		}
+		.slider-value {
+			min-width: 80px;
+			font-size: 0.9rem;
+			font-family: ui-monospace, monospace;
+			text-align: right;
+		}
+
 		.values {
 			margin-top: 1.5rem;
 			display: flex;
@@ -236,6 +287,23 @@
 			</div>
 		</div>
 		<div class="swatch" id="swatch"></div>
+		<div class="sliders">
+			<div class="slider-group">
+				<div class="slider-label">Luma</div>
+				<input type="range" id="lumaSlider" class="slider-input" min="0" max="100" step="0.1" value="54.7" />
+				<div class="slider-value" id="lumaValue">54.7%</div>
+			</div>
+			<div class="slider-group">
+				<div class="slider-label">Chroma</div>
+				<input type="range" id="chromaSlider" class="slider-input" min="0" max="0.4" step="0.001" value="0.511" />
+				<div class="slider-value" id="chromaValue">0.511</div>
+			</div>
+			<div class="slider-group">
+				<div class="slider-label">Hue</div>
+				<input type="range" id="hueSlider" class="slider-input" min="0" max="360" step="1" value="207" />
+				<div class="slider-value" id="hueValue">207°</div>
+			</div>
+		</div>
 		<div class="values">
 			<div class="value-box">
 				<div class="title">RGB</div>
@@ -401,45 +469,112 @@
 			return c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
 		}
 
-		// Converts OKLCh to RGB
-		function oklchToRgb(L, C, h) {
-			const [okL, a, b] = oklchToOklab(L, C, h);
-			const [R, G, B] = oklabToLinearSrgb(okL, a, b);
-			return [
-				Math.round(Math.min(255, Math.max(0, linearToSrgb(R) * 255))),
-				Math.round(Math.min(255, Math.max(0, linearToSrgb(G) * 255))),
-				Math.round(Math.min(255, Math.max(0, linearToSrgb(B) * 255)))
-			];
-		}
-
-		// Updates UI with color values
-		function update(r, g, b) {
-			const hex =
-				'#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toLowerCase();
-			const swatch = document.getElementById('swatch');
-			swatch.style.background = hex;
-			swatch.classList.add('changed');
-			setTimeout(() => swatch.classList.remove('changed'), 300);
-			document.getElementById('rgbCode').textContent = `rgb(${r}, ${g}, ${b})`;
-			document.getElementById('rgbInput').value = `rgb(${r}, ${g}, ${b})`;
-			const [h, s, v] = rgbToHsv(r, g, b);
-			document.getElementById('hsvCode').textContent = `hsv(${h}, ${s}%, ${v}%)`;
-			const R = sRGBtoLinear(r);
-			const G = sRGBtoLinear(g);
-			const B = sRGBtoLinear(b);
-			const [okL, oka, okb] = linearSrgbToOklab(R, G, B);
-			let [L, C, H] = oklabToOklch(okL, oka, okb);
-			if (L > 0.999 || L < 0.001) {
-				L = Math.round(L);
-				C = 0;
-				H = 0;
-			} else {
-				L = Math.min(1, Math.max(0, L));
+					// Converts OKLCh to RGB
+			function oklchToRgb(L, C, h) {
+				const [okL, a, b] = oklchToOklab(L, C, h);
+				const [R, G, B] = oklabToLinearSrgb(okL, a, b);
+				return [
+					Math.round(Math.min(255, Math.max(0, linearToSrgb(R) * 255))),
+					Math.round(Math.min(255, Math.max(0, linearToSrgb(G) * 255))),
+					Math.round(Math.min(255, Math.max(0, linearToSrgb(B) * 255)))
+				];
 			}
-			document.getElementById('oklchCode').textContent =
-				`oklch(${(L * 100).toFixed(1)}%, ${C.toFixed(3)}, ${H.toFixed(0)})`;
-			document.getElementById('colorPicker').value = hex;
-		}
+
+			// Updates sliders from OKLCh values
+			function updateSlidersFromOklch(L, C, h) {
+				document.getElementById('lumaSlider').value = L * 100;
+				document.getElementById('chromaSlider').value = C;
+				document.getElementById('hueSlider').value = h;
+				document.getElementById('lumaValue').textContent = (L * 100).toFixed(1) + '%';
+				document.getElementById('chromaValue').textContent = C.toFixed(3);
+				document.getElementById('hueValue').textContent = h.toFixed(0) + '°';
+			}
+
+			// Flag to prevent feedback loops
+			let isUpdatingFromSlider = false;
+
+			// Updates color from slider values
+			function updateFromSliders() {
+				if (isUpdatingFromSlider) return;
+				
+				isUpdatingFromSlider = true;
+				const luma = parseFloat(document.getElementById('lumaSlider').value) / 100;
+				const chroma = parseFloat(document.getElementById('chromaSlider').value);
+				const hue = parseFloat(document.getElementById('hueSlider').value);
+				
+				try {
+					const [r, g, b] = oklchToRgb(luma, chroma, hue);
+					updateFromSlidersOnly(r, g, b);
+					// Update the input field with the new OKLCh value
+					document.getElementById('rgbInput').value = `oklch(${(luma * 100).toFixed(1)}%, ${chroma.toFixed(3)}, ${hue.toFixed(0)})`;
+				} catch (e) {
+					// Handle out-of-gamut colors gracefully
+					showToast('Color out of gamut!');
+				}
+				isUpdatingFromSlider = false;
+			}
+
+			// Updates UI without affecting sliders (for slider updates)
+			function updateFromSlidersOnly(r, g, b) {
+				const hex =
+					'#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toLowerCase();
+				const swatch = document.getElementById('swatch');
+				swatch.style.background = hex;
+				swatch.classList.add('changed');
+				setTimeout(() => swatch.classList.remove('changed'), 300);
+				document.getElementById('rgbCode').textContent = `rgb(${r}, ${g}, ${b})`;
+				const [h, s, v] = rgbToHsv(r, g, b);
+				document.getElementById('hsvCode').textContent = `hsv(${h}, ${s}%, ${v}%)`;
+				const R = sRGBtoLinear(r);
+				const G = sRGBtoLinear(g);
+				const B = sRGBtoLinear(b);
+				const [okL, oka, okb] = linearSrgbToOklab(R, G, B);
+				let [L, C, H] = oklabToOklch(okL, oka, okb);
+				if (L > 0.999 || L < 0.001) {
+					L = Math.round(L);
+					C = 0;
+					H = 0;
+				} else {
+					L = Math.min(1, Math.max(0, L));
+				}
+				document.getElementById('oklchCode').textContent =
+					`oklch(${(L * 100).toFixed(1)}%, ${C.toFixed(3)}, ${H.toFixed(0)})`;
+				document.getElementById('colorPicker').value = hex;
+			}
+
+					// Updates UI with color values
+			function update(r, g, b) {
+				const hex =
+					'#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toLowerCase();
+				const swatch = document.getElementById('swatch');
+				swatch.style.background = hex;
+				swatch.classList.add('changed');
+				setTimeout(() => swatch.classList.remove('changed'), 300);
+				document.getElementById('rgbCode').textContent = `rgb(${r}, ${g}, ${b})`;
+				document.getElementById('rgbInput').value = `rgb(${r}, ${g}, ${b})`;
+				const [h, s, v] = rgbToHsv(r, g, b);
+				document.getElementById('hsvCode').textContent = `hsv(${h}, ${s}%, ${v}%)`;
+				const R = sRGBtoLinear(r);
+				const G = sRGBtoLinear(g);
+				const B = sRGBtoLinear(b);
+				const [okL, oka, okb] = linearSrgbToOklab(R, G, B);
+				let [L, C, H] = oklabToOklch(okL, oka, okb);
+				if (L > 0.999 || L < 0.001) {
+					L = Math.round(L);
+					C = 0;
+					H = 0;
+				} else {
+					L = Math.min(1, Math.max(0, L));
+				}
+				document.getElementById('oklchCode').textContent =
+					`oklch(${(L * 100).toFixed(1)}%, ${C.toFixed(3)}, ${H.toFixed(0)})`;
+				document.getElementById('colorPicker').value = hex;
+				
+				// Update sliders only if not currently updating from sliders
+				if (!isUpdatingFromSlider) {
+					updateSlidersFromOklch(L, C, H);
+				}
+			}
 
 		// Sets color from hex input
 		function setColorFromHex(hex) {
@@ -548,15 +683,20 @@
 			}
 		});
 
-		// Enter key still works for convenience
-		document.getElementById('rgbInput').addEventListener('keypress', (e) => {
-			if (e.key === 'Enter') {
-				document.getElementById('goBtn').click();
-			}
-		});
+					// Enter key still works for convenience
+			document.getElementById('rgbInput').addEventListener('keypress', (e) => {
+				if (e.key === 'Enter') {
+					document.getElementById('goBtn').click();
+				}
+			});
 
-		// Initialize with default color
-		setColorFromHex(document.getElementById('colorPicker').value);
+			// Slider event listeners
+			document.getElementById('lumaSlider').addEventListener('input', updateFromSliders);
+			document.getElementById('chromaSlider').addEventListener('input', updateFromSliders);
+			document.getElementById('hueSlider').addEventListener('input', updateFromSliders);
+
+			// Initialize with default color
+			setColorFromHex(document.getElementById('colorPicker').value);
 	</script>
 </body>
 
