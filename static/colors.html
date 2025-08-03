@@ -230,6 +230,41 @@
 			border-color: #00ffcc;
 		}
 
+		.lightness-buttons {
+			margin-top: 1rem;
+			display: flex;
+			gap: 1rem;
+			justify-content: center;
+		}
+
+		.lightness-btn {
+			padding: 8px 16px;
+			border: none;
+			border-radius: 8px;
+			font-size: 0.9rem;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+
+		.darken-btn {
+			background: #2c3e50;
+			color: #fff;
+		}
+
+		.darken-btn:hover {
+			background: #34495e;
+		}
+
+		.lighten-btn {
+			background: #ecf0f1;
+			color: #2c3e50;
+		}
+
+		.lighten-btn:hover {
+			background: #bdc3c7;
+		}
+
 		.footer {
 			margin-top: 1rem;
 			text-align: center;
@@ -287,6 +322,10 @@
 			</div>
 		</div>
 		<div class="swatch" id="swatch"></div>
+		<div class="lightness-buttons">
+			<button class="lightness-btn darken-btn" id="darkenBtn">Darken Slightly</button>
+			<button class="lightness-btn lighten-btn" id="lightenBtn">Lighten Slightly</button>
+		</div>
 		<div class="sliders">
 			<div class="slider-group">
 				<div class="slider-label">Luma</div>
@@ -493,6 +532,21 @@
 			// Flag to prevent feedback loops
 			let isUpdatingFromSlider = false;
 
+			// Adjusts lightness by a small amount
+			function adjustLightness(direction) {
+				const currentLuma = parseFloat(document.getElementById('lumaSlider').value) / 100;
+				const chroma = parseFloat(document.getElementById('chromaSlider').value);
+				const hue = parseFloat(document.getElementById('hueSlider').value);
+				
+				// Adjust lightness by 5% (0.05 in OKLCh space)
+				const adjustment = direction === 'darken' ? -0.01 : 0.01;
+				const newLuma = Math.max(0, Math.min(1, currentLuma + adjustment));
+				
+				// Update slider and trigger update
+				document.getElementById('lumaSlider').value = newLuma * 100;
+				updateFromSliders();
+			}
+
 			// Updates color from slider values
 			function updateFromSliders() {
 				if (isUpdatingFromSlider) return;
@@ -501,6 +555,11 @@
 				const luma = parseFloat(document.getElementById('lumaSlider').value) / 100;
 				const chroma = parseFloat(document.getElementById('chromaSlider').value);
 				const hue = parseFloat(document.getElementById('hueSlider').value);
+				
+				// Update the slider value displays
+				document.getElementById('lumaValue').textContent = (luma * 100).toFixed(1) + '%';
+				document.getElementById('chromaValue').textContent = chroma.toFixed(3);
+				document.getElementById('hueValue').textContent = hue.toFixed(0) + '°';
 				
 				try {
 					const [r, g, b] = oklchToRgb(luma, chroma, hue);
@@ -694,6 +753,10 @@
 			document.getElementById('lumaSlider').addEventListener('input', updateFromSliders);
 			document.getElementById('chromaSlider').addEventListener('input', updateFromSliders);
 			document.getElementById('hueSlider').addEventListener('input', updateFromSliders);
+
+			// Lightness adjustment buttons
+			document.getElementById('darkenBtn').addEventListener('click', () => adjustLightness('darken'));
+			document.getElementById('lightenBtn').addEventListener('click', () => adjustLightness('lighten'));
 
 			// Initialize with default color
 			setColorFromHex(document.getElementById('colorPicker').value);
