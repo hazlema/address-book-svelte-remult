@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Copy, Mail, Phone, MapPin, User} from '@lucide/svelte';
+	import { Copy, Mail, Phone, MapPin, User, UserCheck, UserPlus, UserX, UserCog, UserMinus, UserCheck2, UserCog2} from '@lucide/svelte';
 
 	interface Contact {
 		id: number;
@@ -10,6 +10,7 @@
 		address: string;
 		company?: string;
 		notes?: string;
+		profilePic?: string;
 	}
 
 	export let contact: Contact;
@@ -18,6 +19,40 @@
 		navigator.clipboard.writeText(text);
 		// TODO: Add toast notification
 	}
+
+	// Profile picture mapping
+	const profilePicMap = {
+		'default': User,
+		'user1': UserCheck,
+		'user2': UserPlus,
+		'user3': UserX,
+		'user4': UserCog,
+		'user5': UserMinus,
+		'user6': UserCheck2,
+		'user7': UserCog2
+	};
+
+	function getProfilePicComponent(picId?: string) {
+		if (!picId || picId === 'default') return User;
+		if (picId.startsWith('user')) {
+			return profilePicMap[picId as keyof typeof profilePicMap] || User;
+		}
+		return null; // For emoji
+	}
+
+	function getProfilePicEmoji(picId?: string) {
+		if (!picId || picId.startsWith('user') || picId === 'default') return null;
+		
+		const emojiMap: Record<string, string> = {
+			'emoji1': '👤', 'emoji2': '👨', 'emoji3': '👩', 'emoji4': '👨‍💼', 'emoji5': '👩‍💼',
+			'emoji6': '👨‍💻', 'emoji7': '👩‍💻', 'emoji8': '👨‍🎨', 'emoji9': '👩‍🎨', 'emoji10': '👨‍⚕️',
+			'emoji11': '👩‍⚕️', 'emoji12': '👨‍🏫', 'emoji13': '👩‍🏫', 'emoji14': '👨‍🔬', 'emoji15': '👩‍🔬',
+			'emoji16': '👨‍🚀', 'emoji17': '👩‍🚀', 'emoji18': '👨‍🎭', 'emoji19': '👩‍🎭', 'emoji20': '👨‍🎤',
+			'emoji21': '👩‍🎤', 'emoji22': '👨‍🎪', 'emoji23': '👩‍🎪', 'emoji24': '👨‍🎨', 'emoji25': '👩‍🎨'
+		};
+		
+		return emojiMap[picId] || null;
+	}
 </script>
 
 <div class="collapse-arrow collapse bg-base-200 transition-colors hover:bg-base-300">
@@ -25,8 +60,13 @@
 	<div class="collapse-title flex items-center gap-5 text-lg font-medium">
 		<!-- Avatar -->
 		<div class="avatar">
-			<div class="w-8 h-8 rounded-full ring-2 ring-primary ring-offset-base-100">
-				<User size="32" stroke="1" />
+			<div class="w-9 h-9 rounded-full bg-emoji flex items-center justify-center overflow-hidden">
+				{#if getProfilePicEmoji(contact.profilePic)}
+					<span class="text-lg rounded-full leading-none flex items-center justify-center w-full h-full transform translate-y-0.5">{getProfilePicEmoji(contact.profilePic)}</span>
+				{:else}
+					{@const IconComponent = getProfilePicComponent(contact.profilePic)}
+					<IconComponent size="20" stroke="1" />
+				{/if}
 			</div>
 		</div>
 	
@@ -123,7 +163,7 @@
 				{/if}
 
 				<!-- Action Buttons -->
-				<div class="flex flex-wrap gap-2 pt-4">
+				<div class="flex flex-wrap gap-2 pt-4 justify-end">
 					<button class="btn btn-sm btn-primary">
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -135,7 +175,7 @@
 						</svg>
 						Edit
 					</button>
-					<button class="btn btn-outline btn-sm">
+					<button class="btn btn-sm btn-primary">
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
@@ -144,9 +184,9 @@
 								d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
 							/>
 						</svg>
-						Message
+						Send Email
 					</button>
-					<button class="btn btn-outline btn-sm">
+					<button class="btn btn-sm btn-outline bg-red-700 text-white font-extrabold">
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
@@ -155,7 +195,7 @@
 								d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
 							/>
 						</svg>
-						Export
+						Delete
 					</button>
 				</div>
 			</div>

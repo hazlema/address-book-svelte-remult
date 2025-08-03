@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { X, User, Mail, Phone, MapPin, Building, FileText, Save, Plus } from "@lucide/svelte";
+	import { X, User, UserCheck, UserPlus, UserX, UserCog, UserMinus, Mail, Phone, MapPin, Building, FileText, Save, Plus } from "@lucide/svelte";
+	import ProfilePicPicker from './ProfilePicPicker.svelte';
 
 	interface Contact {
 		id: number;
@@ -10,6 +11,7 @@
 		address: string;
 		company?: string;
 		notes?: string;
+		profilePic?: string;
 	}
 
 	// Props
@@ -26,6 +28,8 @@
 	let address = $state('');
 	let company = $state('');
 	let notes = $state('');
+	let profilePic = $state('default');
+	let showProfilePicker = $state(false);
 
 	// Form validation
 	let errors = $state<Record<string, string>>({});
@@ -55,7 +59,8 @@
 				phone: phone.trim(),
 				address: address.trim(),
 				company: company.trim() || undefined,
-				notes: notes.trim() || undefined
+				notes: notes.trim() || undefined,
+				profilePic: profilePic || undefined
 			};
 			
 			onSave(newContact);
@@ -72,6 +77,8 @@
 		address = '';
 		company = '';
 		notes = '';
+		profilePic = 'default';
+		showProfilePicker = false;
 		errors = {};
 		
 		onClose();
@@ -81,6 +88,54 @@
 		if (event.key === 'Escape') {
 			handleClose();
 		}
+	}
+
+	// Profile picture helper functions
+	const profilePicMap = {
+		'default': User,
+		'user1': UserCheck,
+		'user2': UserPlus,
+		'user3': UserX,
+		'user4': UserCog,
+		'user5': UserMinus
+	};
+
+	function getProfilePicComponent(picId?: string) {
+		if (!picId || picId === 'default') return User;
+		if (picId.startsWith('user')) {
+			return profilePicMap[picId as keyof typeof profilePicMap] || User;
+		}
+		return User;
+	}
+
+	function getProfilePicEmoji(picId?: string) {
+		if (!picId || picId.startsWith('user') || picId === 'default') return null;
+		
+		const emojiMap: Record<string, string> = {
+			'emoji1': '👤', 'emoji2': '👨', 'emoji3': '👩', 'emoji4': '👨‍💼', 'emoji5': '👩‍💼',
+			'emoji6': '👨‍💻', 'emoji7': '👩‍💻', 'emoji8': '👨‍🎨', 'emoji9': '👩‍🎨', 'emoji10': '👨‍⚕️',
+			'emoji11': '👩‍⚕️', 'emoji12': '👨‍🏫', 'emoji13': '👩‍🏫', 'emoji14': '👨‍🔬', 'emoji15': '👩‍🔬',
+			'emoji16': '👨‍🚀', 'emoji17': '👩‍🚀', 'emoji18': '👨‍🎭', 'emoji19': '👩‍🎭', 'emoji20': '👨‍🎤',
+			'emoji21': '👩‍🎤', 'emoji22': '👨‍🎪', 'emoji23': '👩‍🎪', 'emoji24': '👨‍🎨', 'emoji25': '👩‍🎨'
+		};
+		
+		return emojiMap[picId] || null;
+	}
+
+	function getProfilePicLabel(picId?: string) {
+		if (!picId || picId === 'default') return 'Default';
+		
+		const labelMap: Record<string, string> = {
+			'user1': 'User 1', 'user2': 'User 2', 'user3': 'User 3', 'user4': 'User 4', 'user5': 'User 5',
+			'user6': 'User 6', 'user7': 'User 7',
+			'emoji1': 'Person', 'emoji2': 'Man', 'emoji3': 'Woman', 'emoji4': 'Business Man', 'emoji5': 'Business Woman',
+			'emoji6': 'Developer', 'emoji7': 'Developer', 'emoji8': 'Artist', 'emoji9': 'Artist', 'emoji10': 'Doctor',
+			'emoji11': 'Doctor', 'emoji12': 'Teacher', 'emoji13': 'Teacher', 'emoji14': 'Scientist', 'emoji15': 'Scientist',
+			'emoji16': 'Astronaut', 'emoji17': 'Astronaut', 'emoji18': 'Performer', 'emoji19': 'Performer', 'emoji20': 'Singer',
+			'emoji21': 'Singer', 'emoji22': 'Circus', 'emoji23': 'Circus', 'emoji24': 'Designer', 'emoji25': 'Designer'
+		};
+		
+		return labelMap[picId] || 'Custom';
 	}
 </script>
 
@@ -112,15 +167,15 @@
 
 		<!-- Form Content -->
 		<div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-			<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-6">
+			<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-5">
 				<!-- Personal Information -->
-				<div class="space-y-4">
-					<h3 class="text-lg font-semibold text-base-content flex items-center gap-2">
-						<User class="w-5 h-5" />
+				<div class="space-y-3">
+					<h3 class="text-base font-semibold text-base-content flex items-center gap-2">
+						<User class="w-4 h-4" />
 						Personal Information
 					</h3>
 					
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 						<!-- First Name -->
 						<div class="form-control">
 							<label class="label" for="firstName">
@@ -175,12 +230,36 @@
 							bind:value={company}
 						/>
 					</div>
+
+					<!-- Profile Picture -->
+					<div class="form-control">
+						<label class="label" for="profilePic">
+							<span class="label-text font-medium">Profile Picture</span>
+						</label>
+						<button
+							type="button"
+							class="btn btn-outline w-full justify-start"
+							onclick={() => showProfilePicker = true}
+						>
+							{#if profilePic === 'default'}
+								<User class="w-4 h-4" />
+							{:else if profilePic.startsWith('user')}
+								{@const IconComponent = getProfilePicComponent(profilePic)}
+								<IconComponent class="w-4 h-4" />
+							{:else}
+								<span class="text-base">{getProfilePicEmoji(profilePic)}</span>
+							{/if}
+							<span class="ml-2">
+								{getProfilePicLabel(profilePic)}
+							</span>
+						</button>
+					</div>
 				</div>
 
 				<!-- Contact Information -->
-				<div class="space-y-4">
-					<h3 class="text-lg font-semibold text-base-content flex items-center gap-2">
-						<Mail class="w-5 h-5" />
+				<div class="space-y-3">
+					<h3 class="text-base font-semibold text-base-content flex items-center gap-2">
+						<Mail class="w-4 h-4" />
 						Contact Information
 					</h3>
 					
@@ -249,9 +328,9 @@
 				</div>
 
 				<!-- Notes -->
-				<div class="space-y-4">
-					<h3 class="text-lg font-semibold text-base-content flex items-center gap-2">
-						<FileText class="w-5 h-5" />
+				<div class="space-y-3">
+					<h3 class="text-base font-semibold text-base-content flex items-center gap-2">
+						<FileText class="w-4 h-4" />
 						Additional Information
 					</h3>
 					
@@ -287,4 +366,12 @@
 			</button>
 		</div>
 	</div>
-</div> 
+</div>
+
+{#if showProfilePicker}
+	<ProfilePicPicker 
+		selectedPic={profilePic} 
+		onSelect={(pic) => profilePic = pic} 
+		onClose={() => showProfilePicker = false} 
+	/>
+{/if} 

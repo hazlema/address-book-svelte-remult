@@ -12,6 +12,7 @@
 		address: string;
 		company?: string;
 		notes?: string;
+		profilePic?: string;
 	}
 
 	// Sample contact data
@@ -24,7 +25,8 @@
 			phone: '+1 (555) 123-4567',
 			address: '123 Main St, Anytown, USA',
 			company: 'Tech Solutions Inc.',
-			notes: 'Met at the conference last month. Great networking opportunity.'
+			notes: 'Met at the conference last month. Great networking opportunity.',
+			profilePic: 'emoji4'
 		},
 		{
 			id: 2,
@@ -34,7 +36,8 @@
 			phone: '+1 (555) 987-6543',
 			address: '456 Oak Ave, Somewhere, USA',
 			company: 'Design Studio',
-			notes: 'Freelance designer. Excellent work on the logo project.'
+			notes: 'Freelance designer. Excellent work on the logo project.',
+			profilePic: 'emoji9'
 		},
 		{
 			id: 3,
@@ -44,7 +47,8 @@
 			phone: '+1 (555) 456-7890',
 			address: '789 Pine Rd, Elsewhere, USA',
 			company: 'StartupXYZ',
-			notes: 'Co-founder. Working on innovative AI solutions.'
+			notes: 'Co-founder. Working on innovative AI solutions.',
+			profilePic: 'emoji6'
 		},
 		{
 			id: 4,
@@ -54,7 +58,8 @@
 			phone: '+1 (555) 321-0987',
 			address: '321 Elm St, Nowhere, USA',
 			company: 'Marketing Pro',
-			notes: 'Marketing consultant. Helped with the campaign strategy.'
+			notes: 'Marketing consultant. Helped with the campaign strategy.',
+			profilePic: 'emoji5'
 		},
 		{
 			id: 5,
@@ -64,7 +69,8 @@
 			phone: '+1 (555) 654-3210',
 			address: '654 Maple Dr, Anywhere, USA',
 			company: 'Consulting Group',
-			notes: 'Business consultant. Valuable insights on growth strategy.'
+			notes: 'Business consultant. Valuable insights on growth strategy.',
+			profilePic: 'user1'
 		}
 	]);
 
@@ -223,13 +229,5 @@
 	</main>
 </div>
 {#if showAddAddress}
-	<!-- Custom Modal Overlay -->
-	<div class="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-		<!-- Modal Window - 3/4 width of w-4xl container -->
-		<div class="w-4xl mx-auto">
-			<div class="w-3/4 mx-auto bg-base-100 rounded-2xl shadow-2xl border border-base-300">
-				<AddressAdd onClose={() => (showAddAddress = false)} onSave={handleAddAddress} />
-			</div>
-		</div>
-	</div>
+	<AddressAdd onClose={() => (showAddAddress = false)} onSave={handleAddAddress} />
 {/if}
