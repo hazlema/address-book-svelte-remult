@@ -1,5 +1,16 @@
 <script lang="ts">
-	import { Copy, Mail, Phone, MapPin, User, UserCheck, UserPlus, UserX, UserCog, UserMinus, UserCheck2, UserCog2} from '@lucide/svelte';
+	import {
+		Copy,
+		Mail,
+		Phone,
+		MapPin,
+		User,
+		UserCheck,
+		UserPlus,
+		UserX,
+		UserCog,
+		UserMinus,
+	} from '@lucide/svelte';
 
 	interface Contact {
 		id: number;
@@ -22,14 +33,12 @@
 
 	// Profile picture mapping
 	const profilePicMap = {
-		'default': User,
-		'user1': UserCheck,
-		'user2': UserPlus,
-		'user3': UserX,
-		'user4': UserCog,
-		'user5': UserMinus,
-		'user6': UserCheck2,
-		'user7': UserCog2
+		default: User,
+		user1: UserCheck,
+		user2: UserPlus,
+		user3: UserX,
+		user4: UserCog,
+		user5: UserMinus,
 	};
 
 	function getProfilePicComponent(picId?: string) {
@@ -42,35 +51,56 @@
 
 	function getProfilePicEmoji(picId?: string) {
 		if (!picId || picId.startsWith('user') || picId === 'default') return null;
-		
+
 		const emojiMap: Record<string, string> = {
-			'emoji1': '👤', 'emoji2': '👨', 'emoji3': '👩', 'emoji4': '👨‍💼', 'emoji5': '👩‍💼',
-			'emoji6': '👨‍💻', 'emoji7': '👩‍💻', 'emoji8': '👨‍🎨', 'emoji9': '👩‍🎨', 'emoji10': '👨‍⚕️',
-			'emoji11': '👩‍⚕️', 'emoji12': '👨‍🏫', 'emoji13': '👩‍🏫', 'emoji14': '👨‍🔬', 'emoji15': '👩‍🔬',
-			'emoji16': '👨‍🚀', 'emoji17': '👩‍🚀', 'emoji18': '👨‍🎭', 'emoji19': '👩‍🎭', 'emoji20': '👨‍🎤',
-			'emoji21': '👩‍🎤', 'emoji22': '👨‍🎪', 'emoji23': '👩‍🎪', 'emoji24': '👨‍🎨', 'emoji25': '👩‍🎨'
+			emoji1: '👤',
+			emoji2: '👨',
+			emoji3: '👩',
+			emoji4: '👨‍💼',
+			emoji5: '👩‍💼',
+			emoji6: '👨‍💻',
+			emoji7: '👩‍💻',
+			emoji8: '👨‍🎨',
+			emoji9: '👩‍🎨',
+			emoji10: '👨‍⚕️',
+			emoji11: '👩‍⚕️',
+			emoji12: '👨‍🏫',
+			emoji13: '👩‍🏫',
+			emoji14: '👨‍🔬',
+			emoji15: '👩‍🔬',
+			emoji16: '👨‍🚀',
+			emoji17: '👩‍🚀',
+			emoji18: '👨‍🎭',
+			emoji19: '👩‍🎭',
+			emoji20: '👨‍🎤',
+			emoji21: '👩‍🎤',
+			emoji22: '👨‍🎪',
+			emoji23: '👩‍🎪',
+			emoji24: '👨‍🎨',
+			emoji25: '👩‍🎨'
 		};
-		
+
 		return emojiMap[picId] || null;
 	}
 </script>
 
-<div class="collapse-arrow collapse bg-base-200 transition-colors hover:bg-base-300">
-	<input type="radio" name="contact-accordion" />
+<div class="collapse-arrow collapse bg-base-200 transition-colors border-2 border-black/10">
+	<input type="checkbox" />
 	<div class="collapse-title flex items-center gap-5 text-lg font-medium">
 		<!-- Avatar -->
 		<div class="avatar">
-			<div class="w-9 h-9 rounded-full bg-emoji flex items-center justify-center overflow-hidden">
+			<div class="bg-emoji flex h-9 w-9 items-center justify-center overflow-hidden rounded-full">
 				{#if getProfilePicEmoji(contact.profilePic)}
-					<span class="text-lg rounded-full leading-none flex items-center justify-center w-full h-full transform translate-y-0.5">{getProfilePicEmoji(contact.profilePic)}</span>
+					<span
+						class="flex h-full w-full translate-y-0.5 transform items-center justify-center rounded-full text-lg leading-none"
+						>{getProfilePicEmoji(contact.profilePic)}</span
+					>
 				{:else}
 					{@const IconComponent = getProfilePicComponent(contact.profilePic)}
 					<IconComponent size="20" stroke="1" />
 				{/if}
 			</div>
 		</div>
-	
-		<!-- Name and Company -->
 		<div class="flex-1">
 			<div class="font-semibold text-base-content">
 				{contact.firstName}
@@ -85,8 +115,9 @@
 	</div>
 
 	<div class="collapse-content">
-		<div class="grid grid-cols-1 gap-6 p-4 pt-4 md:grid-cols-2 bg-base-100 border-2 border-white/10 rounded-2xl">
-			
+		<div
+			class="grid grid-cols-1 gap-6 rounded-2xl border-2 border-black/10 bg-base-300 p-4 pt-4 md:grid-cols-2"
+		>
 			<!-- Contact Information -->
 			<div class="space-y-4">
 				<h4 class="mb-3 font-semibold text-base-content">Contact Information</h4>
@@ -109,8 +140,8 @@
 							title="Copy email"
 							aria-label="Copy email"
 						>
-						<span class="text-base">
-							<Copy size="16" stroke="1" />
+							<span class="text-base">
+								<Copy size="16" stroke="1" />
 							</span>
 						</button>
 					</div>
@@ -131,8 +162,8 @@
 							title="Copy phone"
 							aria-label="Copy phone"
 						>
-						<span class="text-base">
-							<Copy size="16" stroke="1" />
+							<span class="text-base">
+								<Copy size="16" stroke="1" />
 							</span>
 						</button>
 					</div>
@@ -163,7 +194,7 @@
 				{/if}
 
 				<!-- Action Buttons -->
-				<div class="flex flex-wrap gap-2 pt-4 justify-end">
+				<div class="flex flex-wrap justify-end gap-2 pt-4">
 					<button class="btn btn-sm btn-primary">
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -186,7 +217,7 @@
 						</svg>
 						Send Email
 					</button>
-					<button class="btn btn-sm btn-outline bg-red-700 text-white font-extrabold">
+					<button class="btn bg-red-700 font-extrabold text-white btn-sm">
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { X, User, UserCheck, UserPlus, UserX, UserCog, UserMinus, UserCheck2, UserCog2 } from "@lucide/svelte";
+	import { X, User, UserCheck, UserPlus, UserX, UserCog, UserMinus } from "@lucide/svelte";
 
 	// Props
 	let { selectedPic, onSelect, onClose } = $props<{
@@ -16,9 +16,6 @@
 		{ id: 'user3', icon: UserX, label: 'User 3' },
 		{ id: 'user4', icon: UserCog, label: 'User 4' },
 		{ id: 'user5', icon: UserMinus, label: 'User 5' },
-		{ id: 'user6', icon: UserCheck2, label: 'User 6' },
-		{ id: 'user7', icon: UserCog2, label: 'User 7' },
-		// Emoji options
 		{ id: 'emoji1', emoji: '👤', label: 'Person' },
 		{ id: 'emoji2', emoji: '👨', label: 'Man' },
 		{ id: 'emoji3', emoji: '👩', label: 'Woman' },
